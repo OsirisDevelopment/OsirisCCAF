@@ -3,7 +3,7 @@ import time
 from telnetlib import Telnet
 import random
 
-ids={1:'0000000',2:'1000000',3:'0100000',4:'0010000',5:'0001000',6:'0000100',7:'0000010',8:'0000001',9:'1100000',10:'0110000',11:'0011000',12:'0001100',13:'0000110',14:'0000011',15:'1110000',16:'0111000',17:'0011100',18:'0001110',19:'0000111',20:'1111000',21:'0111100',22:'0011110',23:'0001111',24:'1111100',25:'0111110',26:'0011111',27:'1111110',28:'0111111',29:'1111111'}
+ids={2:'0000000',3:'1000000',4:'0100000',5:'0010000',6:'0001000',7:'0000100',8:'0000010',9:'0000001',10:'1100000',11:'0110000',12:'0011000',13:'0001100',14:'0000110',15:'0000011',16:'1110000',17:'0111000',18:'0011100',19:'0001110',20:'0000111',21:'1111000',22:'0111100',23:'0011110',24:'0001111',25:'1111100',26:'0111110',27:'0011111',28:'1111110',29:'0111111',30:'1111111'}
 
 def invertir(entero):
 	if entero==0:
@@ -158,9 +158,12 @@ cadenaMezclada="0000000"
 
 id_inicial=1
 
-telnet.write('xCommand Camera Preset Activate PresetId:30\n')
+telnet.write('xCommand Camera Preset Activate PresetId:1\n')
 telnet.read_until('OK')
 time.sleep(0.2)
+
+counter=0
+VariableAjuste=5
 
 while (True):
 
@@ -176,6 +179,7 @@ while (True):
 
 	#caso1
     if cadena_inicial=="0000000" and cadena_auxiliar== "0000000":
+        counter=0
         #print "caso 1"
         id1=determinarID("0000000")
         #print cadena_inicial
@@ -184,6 +188,7 @@ while (True):
 
 	#caso2
     elif cadena_inicial=="0000000" and cadena_auxiliar!= "0000000":
+        counter=0
         #print "caso 2"
         id1=determinarID(transformarCadena(cadena_auxiliar))
         #print cadena_inicial
@@ -193,8 +198,10 @@ while (True):
 
 	#caso3
     elif cadena_inicial!="0000000" and cadena_auxiliar== "0000000":
+        counter=0
         #print "caso 3"
         id1=determinarID(transformarCadena(cadena_inicial))
+        
         #print cadena_inicial
         #print 'el id del preset es', id1
         #print 'la configuracion es', diccionario[id1]
@@ -203,9 +210,22 @@ while (True):
 	#caso4
     elif cadena_inicial!="0000000" and cadena_auxiliar!= "0000000":
         #print "caso 4"
+        if cadena_inicial==cadena_auxiliar:
+            counter+=1
+        elif cadena_inicial!= cadena_auxiliar:
+            counter=0
+
+
         cadenaMezclada=mezclarCadena(cadena_auxiliar,cadena_inicial)
         cadena_auxiliar=cadenaMezclada
-        id1=determinarID(transformarCadena(cadena_auxiliar))
+
+        if counter==5:
+            id1=determinarID(transformarCadena(cadena_auxiliar))
+        else:
+            id1=determinarID(transformarCadena("0000000"))
+        #id1=determinarID(transformarCadena(cadena_auxiliar))
+
+
         #print cadena_inicial
         #print 'el id del preset es', id1
         #print 'la configuracion es', diccionario[id1]
@@ -225,6 +245,9 @@ while (True):
     time.sleep(0.2)
 
     cadena_inicial=str(S1)+str(S2)+str(S3)+str(S4)+str(S5)+str(S6)+str(S7)
+
+    #counter+=1
+
 
     #cadena_inicial=transformarCadena(armarCadena())
     #print "-------------------------------------------"
