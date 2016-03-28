@@ -188,9 +188,12 @@ while (True):
 
 	#caso2
     elif cadena_inicial=="0000000" and cadena_auxiliar!= "0000000":
-        counter=0
+        counter+=1
         #print "caso 2"
-        id1=determinarID(transformarCadena(cadena_auxiliar))
+        if counter==VariableAjuste:
+            id1=determinarID(transformarCadena(cadena_auxiliar))
+        else:
+            pass
         #print cadena_inicial
         #print 'el id del preset es', id1
         #print 'la configuracion es', diccionario[id1]
@@ -201,7 +204,7 @@ while (True):
         counter=0
         #print "caso 3"
         id1=determinarID(transformarCadena(cadena_inicial))
-        
+     
         #print cadena_inicial
         #print 'el id del preset es', id1
         #print 'la configuracion es', diccionario[id1]
@@ -219,11 +222,11 @@ while (True):
         cadenaMezclada=mezclarCadena(cadena_auxiliar,cadena_inicial)
         cadena_auxiliar=cadenaMezclada
 
-        if counter==5:
-            id1=determinarID(transformarCadena(cadena_auxiliar))
+        if counter==VariableAjuste:
+            id1=determinarID(transformarCadena(cadena_inicial))
         else:
-            id1=determinarID(transformarCadena("0000000"))
-        #id1=determinarID(transformarCadena(cadena_auxiliar))
+            #id1=determinarID(transformarCadena("0000000"))
+            id1=determinarID(transformarCadena(cadena_auxiliar))
 
 
         #print cadena_inicial
