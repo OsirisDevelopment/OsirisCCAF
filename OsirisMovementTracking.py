@@ -121,7 +121,6 @@ while (True):
     	id1=Configurations[conf]
 
 
-    elif States["pasado"]=="0000000" and States["actual"]=="0000000":
     	if States["antepasado"]=="1000000":
     		conf="Cam1S1"
     		id1=Configurations[conf]
@@ -145,6 +144,7 @@ while (True):
     		id1=Configurations[conf]
 
 	id_preset=id1
+	
     if id_inicial!=id_preset:
         telnet.write('xCommand Camera Preset Activate PresetId:'+str(id1)+'\n')
         telnet.read_until('OK')
