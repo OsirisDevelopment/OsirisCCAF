@@ -86,6 +86,8 @@ States={"actual":"0000000","pasado":"0000000","antepasado":"0000000"}
 
 cadena_inicial="0000000"
 
+id_inicial=2
+
 while (True):
 	GPIO.output(23,1)
     S1=GPIO.input(Sen_1)
@@ -147,6 +149,7 @@ while (True):
         telnet.write('xCommand Camera Preset Activate PresetId:'+str(id1)+'\n')
         telnet.read_until('OK')
 
+    id_inicial=id_preset
 
 	time.sleep(0.3)
 	GPIO.output(23,0)
