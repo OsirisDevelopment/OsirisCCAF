@@ -146,7 +146,7 @@ States={"actual":"00000000","pasado":"00000000","antepasado":"00000000"}
 
 #Se definen variables iniciales para empezar desde planos generales
 cadena_inicial="0000000"
-id_inicial=2
+id_inicial="Cam2Gral"
 
 #Inicio de loop
 while (True):
@@ -168,13 +168,15 @@ while (True):
 	Velocidad=8
 
 	ZPTpasado=Configuraciones[Indice[States["pasado"]]]
-	ZPTactual=Configuraciones[Indices[States["actual"]]]
+	ZPTactual=Configuraciones[Indice[States["actual"]]]
 	delta=ZPTpasado-ZPTactual
 
 	#inicializacion de posicion de la camara
 	position=ZPTpasado
 
 	while position<=ZPTactual:
+		position+=Velocidad
+		postorder(position)
 
 
 
