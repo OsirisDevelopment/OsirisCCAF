@@ -4,7 +4,7 @@ from telnetlib import Telnet
 import random
 
 #Diccionadio de configuraciones de presets
-Configurations={"Cam2Gral":1,"Cam1Gral":2,"Cam1Izq":3,"Cam1Cnt":4,"Cam1Der":5,"Cam1S1":6,"Cam1S2":7,"Cam1S3":8,"Cam1S4":9,"Cam1S5":10,"Cam1S6":11,"Cam1S7":12}
+Configurations={"Cam2Gral":1,"Cam1Gral":2,"Cam1Izq":5,"Cam1Cnt":4,"Cam1Der":3,"Cam1S1":6,"Cam1S2":7,"Cam1S3":8,"Cam1S4":9,"Cam1S5":10,"Cam1S6":11,"Cam1S7":12}
 
 #Funcion que al recibir la cadena, entrega la cantidad de ceros antes del primer 1
 def contarZeros(cadena):
@@ -48,6 +48,56 @@ def transformarCadena(cadena):
 		cadenaDefinitiva='0'*contarZeros(cadena)+'1'*contarOnes(cadena)+'0'*contarZerosReverse(cadena)
 		return cadenaDefinitiva
 
+def determinarConfiguracion(cadena):
+	if cadena=="1000000":
+    	conf="Cam1S1"
+    	id_preset=Configurations[conf]
+
+    if cadena=="0100000":
+    	conf="Cam1S2"
+		id_preset=Configurations[conf]
+		            
+   	if cadena=="0010000":
+   		conf="Cam1S3"
+   		id_preset=Configurations[conf]
+		            
+   	if cadena=="0001000":
+   		conf="Cam1S4"
+   		id_preset=Configurations[conf]
+		            
+   	if cadena=="0000100":
+   		conf="Cam1S5"
+   		id_preset=Configurations[conf]
+		            
+   	if cadena=="0000010":
+   		conf="Cam1S6"
+   		id_preset=Configurations[conf]
+
+   	if cadena=="0000001":
+   		conf="Cam1S7"
+   		id_preset=Configurations[conf]
+   	return id_preset
+
+def activarPreset(id_preset):
+	telnet.write('xCommand Camera Preset Activate PresetId:'+str(id_preset)+'\n')
+    telnet.read_until('OK')
+
+def determinarZona(cadena):
+	if cadena== "1000000" or cadena== "0100000" or cadena== "1100000":
+    	conf="Cam1Izq"
+    	id_preset=Configurations[conf]        
+
+    elif cadena== "0010000" or cadena== "0001000" or cadena== "0000100" or cadena== "0011000" or cadena== "0001100"or cadena== "0011100":
+    	conf="Cam1Cnt"
+    	id_preset=Configurations[conf]        
+
+    elif cadena== "0000001" or cadena== "0000010" or cadena== "0000011":
+    	conf="Cam1Der"
+    	id_preset=Configurations[conf]
+    	
+    return id_preset
+
+
 #Configuracion de puertos de recepcion de sennal en placa de la barra de sensores
 
 #Definicion de pines de la GPIO
@@ -87,6 +137,9 @@ time.sleep(1)
 telnet.write('xCommand Camera Preset Activate PresetId:1\n')
 telnet.read_until('OK')
 time.sleep(0.2)
+telnet.write('xCommand Camera Preset Activate PresetId:2\n')
+telnet.read_until('OK')
+time.sleep(0.2)
 
 #Definicion de estructura para guardar las snneales en el tiempo
 States={"actual":"0000000","pasado":"0000000","antepasado":"0000000"}
@@ -94,9 +147,11 @@ States={"actual":"0000000","pasado":"0000000","antepasado":"0000000"}
 #Se definen variables iniciales para empezar desde planos generales
 cadena_inicial="0000000"
 id_inicial=2
-
+id_preset=2
+flag=True
 #Inicio de loop
 while (True):
+
 	#Lectura de sennales
 	GPIO.output(23,1)
     S1=GPIO.input(Sen_1)
@@ -112,58 +167,25 @@ while (True):
     States["pasado"]=States["actual"]
     States["actual"]=cadena_inicial
 
-    #Si la cadena es mas larga que 3, entonces se debe setear el plano general
-    if contarOnes(cadena_inicial)>3:
-    	conf="Cam1Gral"
-    	id1=Configurations[conf]
+    if contarOnes(States["actual"])>3:
+    	id_preset=2
 
-    #Si el objetivo se encuentra bajo las zonas establecidas se deben setear los presets correspondientes
-    elif States["actual"]== "1000000" or States["actual"]== "0100000" or States["actual"]== "1100000":
-    	conf="Cam1Izq"
-    	id1=Configurations[conf]
+    else:
+	    if States["actual"]!="0000000":
+	    	if contarOnes(States["actual"])==1:
+	    		if States["pasado"]==States["actual"] or States["pasado"]=="0000000":
+	    			id_preset=determinarConfiguracion(States["actual"])
+	    		else:
+	    			id_preset=determinarZona(States["actual"])
+	    	else:
+	    		id_preset=determinarZona(States["actual"])
+	    else:
+	    	pass
 
-    elif States["actual"]== "0010000" or States["actual"]== "0001000" or States["actual"]== "0000100" or States["actual"]== "0011000" or States["actual"]== "0001100"or States["actual"]== "0011100":
-    	conf="Cam1Cnt"
-    	id1=Configurations[conf]
-
-    elif States["actual"]== "0000001" or States["actual"]== "0000010" or States["actual"]== "0000011":
-    	conf="Cam1Der"
-    	id1=Configurations[conf]
-
-    #Si no se recibe sennal en dos iteraciones y hubo antes una sennl, entonces se debe hacer zoom
-    if States["pasado"]=="0000000" and States["actual"]=="0000000":
-    	if States["antepasado"]=="1000000":
-    		conf="Cam1S1"
-    		id1=Configurations[conf]
-    	if States["antepasado"]=="0100000":
-    		conf="Cam1S2"
-    		id1=Configurations[conf]
-    	if States["antepasado"]=="0010000":
-    		conf="Cam1S3"
-    		id1=Configurations[conf]
-    	if States["antepasado"]=="0001000":
-    		conf="Cam1S4"
-    		id1=Configurations[conf]
-    	if States["antepasado"]=="0000100":
-    		conf="Cam1S5"
-    		id1=Configurations[conf]
-    	if States["antepasado"]=="0000010":
-    		conf="Cam1S6"
-    		id1=Configurations[conf]
-    	if States["antepasado"]=="0000001":
-    		conf="Cam1S7"
-    		id1=Configurations[conf]
-
-   	#Se actualiza el id del preset
-	id_preset=id1
-
-	#Si el preset es el mismo que el de la iteracion anterior, no es necesario volver a mandar el comando al codec (optimizacion)
     if id_inicial!=id_preset:
-        telnet.write('xCommand Camera Preset Activate PresetId:'+str(id1)+'\n')
-        telnet.read_until('OK')
+    	activarPreset(id_preset)
+    	id_inicial=id_preset
 
-    #Se actualiza la variable a comparar
-    id_inicial=id_preset
     #Se hace una pausa
 	time.sleep(0.3)
 	#Se enciende el led
@@ -173,3 +195,7 @@ while (True):
 
 	#Se lee la sennal de los sensores
 	cadena_inicial=str(S1)+str(S2)+str(S3)+str(S4)+str(S5)+str(S6)+str(S7)
+
+
+
+    			

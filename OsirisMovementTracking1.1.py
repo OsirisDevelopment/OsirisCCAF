@@ -4,7 +4,7 @@ from telnetlib import Telnet
 import random
 
 #Diccionadio de configuraciones de presets
-Configurations={"Cam2Gral":1,"Cam1Gral":2,"Cam1Izq":3,"Cam1Cnt":4,"Cam1Der":5,"Cam1S1":6,"Cam1S2":7,"Cam1S3":8,"Cam1S4":9,"Cam1S5":10,"Cam1S6":11,"Cam1S7":12}
+Configurations={"Cam2Gral":1,"Cam1Gral":2,"Cam1Izq":5,"Cam1Cnt":4,"Cam1Der":3,"Cam1S1":6,"Cam1S2":7,"Cam1S3":8,"Cam1S4":9,"Cam1S5":10,"Cam1S6":11,"Cam1S7":12}
 
 #Funcion que al recibir la cadena, entrega la cantidad de ceros antes del primer 1
 def contarZeros(cadena):
@@ -87,6 +87,9 @@ time.sleep(1)
 telnet.write('xCommand Camera Preset Activate PresetId:1\n')
 telnet.read_until('OK')
 time.sleep(0.2)
+telnet.write('xCommand Camera Preset Activate PresetId:2\n')
+telnet.read_until('OK')
+time.sleep(0.2)
 
 #Definicion de estructura para guardar las snneales en el tiempo
 States={"actual":"0000000","pasado":"0000000","antepasado":"0000000"}
@@ -94,9 +97,11 @@ States={"actual":"0000000","pasado":"0000000","antepasado":"0000000"}
 #Se definen variables iniciales para empezar desde planos generales
 cadena_inicial="0000000"
 id_inicial=2
-
+id_preset=2
+flag=True
 #Inicio de loop
 while (True):
+
 	#Lectura de sennales
 	GPIO.output(23,1)
     S1=GPIO.input(Sen_1)
@@ -115,51 +120,62 @@ while (True):
     #Si la cadena es mas larga que 3, entonces se debe setear el plano general
     if contarOnes(cadena_inicial)>3:
     	conf="Cam1Gral"
-    	id1=Configurations[conf]
+    	id_preset=Configurations[conf]
+        
 
     #Si el objetivo se encuentra bajo las zonas establecidas se deben setear los presets correspondientes
     elif States["actual"]== "1000000" or States["actual"]== "0100000" or States["actual"]== "1100000":
     	conf="Cam1Izq"
-    	id1=Configurations[conf]
+    	id_preset=Configurations[conf]
+        
 
     elif States["actual"]== "0010000" or States["actual"]== "0001000" or States["actual"]== "0000100" or States["actual"]== "0011000" or States["actual"]== "0001100"or States["actual"]== "0011100":
     	conf="Cam1Cnt"
-    	id1=Configurations[conf]
+    	id_preset=Configurations[conf]
+        
 
     elif States["actual"]== "0000001" or States["actual"]== "0000010" or States["actual"]== "0000011":
     	conf="Cam1Der"
-    	id1=Configurations[conf]
+    	id_preset=Configurations[conf]
+        
 
     #Si no se recibe sennal en dos iteraciones y hubo antes una sennl, entonces se debe hacer zoom
     if States["pasado"]=="0000000" and States["actual"]=="0000000":
     	if States["antepasado"]=="1000000":
     		conf="Cam1S1"
-    		id1=Configurations[conf]
+    		id_preset=Configurations[conf]
+            
     	if States["antepasado"]=="0100000":
     		conf="Cam1S2"
-    		id1=Configurations[conf]
+    		id_preset=Configurations[conf]
+            
     	if States["antepasado"]=="0010000":
     		conf="Cam1S3"
-    		id1=Configurations[conf]
+    		id_preset=Configurations[conf]
+            
+
     	if States["antepasado"]=="0001000":
     		conf="Cam1S4"
-    		id1=Configurations[conf]
+    		id_preset=Configurations[conf]
+            
+
     	if States["antepasado"]=="0000100":
     		conf="Cam1S5"
-    		id1=Configurations[conf]
+    		id_preset=Configurations[conf]
+            
+
     	if States["antepasado"]=="0000010":
     		conf="Cam1S6"
-    		id1=Configurations[conf]
+    		id_preset=Configurations[conf]
+            
     	if States["antepasado"]=="0000001":
     		conf="Cam1S7"
-    		id1=Configurations[conf]
+    		id_preset=Configurations[conf]
+            
 
-   	#Se actualiza el id del preset
-	id_preset=id1
-
-	#Si el preset es el mismo que el de la iteracion anterior, no es necesario volver a mandar el comando al codec (optimizacion)
+	#  Si el preset es el mismo que el de la iteracion anterior, no es necesario volver a mandar el comando al codec (optimizacion)
     if id_inicial!=id_preset:
-        telnet.write('xCommand Camera Preset Activate PresetId:'+str(id1)+'\n')
+        telnet.write('xCommand Camera Preset Activate PresetId:'+str(id_preset)+'\n')
         telnet.read_until('OK')
 
     #Se actualiza la variable a comparar
